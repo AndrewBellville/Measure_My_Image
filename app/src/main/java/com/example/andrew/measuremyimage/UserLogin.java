@@ -1,5 +1,6 @@
 package com.example.andrew.measuremyimage;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,9 @@ public class UserLogin extends ActionBarActivity {
     // Log cat tag
     private static final String LOG = "UserLogin";
 
+    //intent message
+    public final static String EXTRA_MESSAGE = "com.example.measuremyimage.MESSAGE";
+
     private TextView userName;
     private TextView password;
     private TextView message;
@@ -27,33 +31,14 @@ public class UserLogin extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_login);
-        dbManager = new DataBaseManager(getApplicationContext());
         Log.e(LOG, "Entering: onCreate");
+        dbManager = DataBaseManager.getInstance(getApplicationContext());
+        getActionBar().hide();
 
         //Link to XML onCreate of this class
         userName = (TextView)findViewById(R.id.UserNameTextBox);
         password = (TextView)findViewById(R.id.PasswordTextBox);
         message = (TextView)findViewById(R.id.MessageText);
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.user_login, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private boolean validateUserLogin()
@@ -82,7 +67,13 @@ public class UserLogin extends ActionBarActivity {
         //TODO actually do something
         if (validateUserLogin())
         {
-            message.setText("Successful Login");
+            //Create and intent which will open next activity UserProfile
+            Intent intent = new Intent(this, UserProfile.class);
+            //Attach message with intent so that UserProfile knows who is login
+            String IntentMessage = userName.getText().toString();
+            intent.putExtra(EXTRA_MESSAGE, IntentMessage);
+            //start next activity
+            startActivity(intent);
         }
         else
         {
