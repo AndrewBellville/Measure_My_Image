@@ -181,7 +181,8 @@ public class DataBaseManager extends SQLiteOpenHelper {
     */
     public List<ImageSchema> getAllImagesForUser(String aUserName) {
         List<ImageSchema> imageList = new ArrayList<ImageSchema>();
-        String selectQuery = "SELECT  * FROM " + TABLE_IMAGE;
+        String selectQuery = "SELECT  * FROM " + TABLE_IMAGE
+                + " WHERE " + USER_NAME + " = '" + aUserName +"'";
 
         Log.e(LOG, selectQuery);
 

@@ -1,10 +1,27 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="match_parent"
-    android:paddingTop="60dp"
-    android:paddingBottom="16dp"
     tools:context="com.example.andrew.measuremyimage.UserImages">
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/scrollView"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/button"
+        android:background="#ffd2faff"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentRight="false">
+
+        <TableLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/ImageTable">
+
+            </TableLayout>
+    </ScrollView>
 
     <Button
         android:layout_width="wrap_content"
@@ -15,14 +32,4 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/imageView"
-        android:minHeight="200dp"
-        android:minWidth="200dp"
-        android:maxHeight="200dp"
-        android:maxWidth="200dp"
-        android:layout_above="@+id/button"
-        android:layout_centerHorizontal="true" />
 </RelativeLayout>
