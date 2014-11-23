@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.andrew.measuremyimage" >
-
     // Allow application to read images from storage
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -28,6 +31,18 @@
         <activity
             android:name=".UserImages"
             android:label="@string/title_activity_user_images" >
+        </activity>
+        <activity
+            android:name=".ImageDisplay"
+            android:label="@string/title_activity_image_display" >
+        </activity>
+        <activity
+            android:name=".ReferenceObject"
+            android:label="@string/title_activity_reference_object" >
+        </activity>
+        <activity
+            android:name=".UserReferenceObjects"
+            android:label="@string/title_activity_user_reference_objects" >
         </activity>
     </application>
 

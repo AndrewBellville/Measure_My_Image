@@ -30,6 +30,19 @@
         android:id="@+id/button"
         android:onClick="ImportImageClick"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="31dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/OpenCamera"
+        android:id="@+id/button2"
+        android:onClick="TakePictureClick"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/button"
+        android:layout_toEndOf="@+id/button"
+        android:layout_marginLeft="40dp" />
 
 </RelativeLayout>

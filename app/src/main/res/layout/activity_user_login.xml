@@ -29,7 +29,8 @@
         android:layout_alignLeft="@+id/UserLoginLabel"
         android:layout_alignStart="@+id/UserLoginLabel"
         android:layout_alignRight="@+id/LoginTitle"
-        android:layout_alignEnd="@+id/LoginTitle" />
+        android:layout_alignEnd="@+id/LoginTitle"
+        android:background="#ffd2faff"/>
 
     <EditText
         android:layout_width="wrap_content"
@@ -41,7 +42,8 @@
         android:layout_alignLeft="@+id/PasswordLabel"
         android:layout_alignStart="@+id/PasswordLabel"
         android:layout_alignRight="@+id/UserNameTextBox"
-        android:layout_alignEnd="@+id/UserNameTextBox" />
+        android:layout_alignEnd="@+id/UserNameTextBox"
+        android:background="#ffd2faff"/>
 
     <TextView
         android:layout_width="wrap_content"

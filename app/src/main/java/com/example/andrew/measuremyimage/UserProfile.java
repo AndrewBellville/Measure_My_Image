@@ -40,6 +40,11 @@ public class UserProfile extends TabActivity {
         intent.putExtra(EXTRA_MESSAGE, userName);
         tabHost.addTab(tabHost.newTabSpec("images").setIndicator("Images").setContent(intent));
 
+        //Add Reference Object tab
+        intent = new Intent(this, UserReferenceObjects.class);
+        intent.putExtra(EXTRA_MESSAGE, userName);
+        tabHost.addTab(tabHost.newTabSpec("object").setIndicator("Object").setContent(intent));
+
     }
 
     @Override

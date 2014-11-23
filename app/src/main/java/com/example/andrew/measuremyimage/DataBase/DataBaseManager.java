@@ -21,7 +21,7 @@ import java.util.Locale;
  */
 public class DataBaseManager extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 3;//increment to have DB changes take effect
+    private static final int DATABASE_VERSION = 5;//increment to have DB changes take effect
     private static final String DATABASE_NAME = "MeasureMyImage";
 
     // Log cat tag
@@ -30,16 +30,24 @@ public class DataBaseManager extends SQLiteOpenHelper {
     // Table Names
     private static final String TABLE_USERS = "Users";
     private static final String TABLE_IMAGE = "Image";
+    private static final String TABLE_REFERENCE_OBJECT = "ReferenceObject";
 
     // Common column names across both tables
+    private static final String ROW_ID = "rowid";
     private static final String CREATED_ON = "CreatedOn";
-    private static final String USER_NAME = "UserName"; // primary key for  Users, Foreign key for Image
+    private static final String USER_NAME = "UserName"; // primary key for  Users, Foreign key for Image, ReferenceObject
 
     // USERS column names
     private static final String PASSWORD = "Password";
 
     // IMAGE column names
     private static final String IMAGE = "UserImage";
+
+    //REFERENCE_OBJECT OBJECT column names
+    private static final String OBJECT_NAME = "ObjectName";
+    private static final String HEIGHT = "Height";
+    private static final String WIDTH = "Width";
+    private static final String UNIT_OF_MEASURE = "UnitOfMeasure";
 
     // Table Create Statements
     //CREATE_TABLE_USERS
@@ -51,6 +59,11 @@ public class DataBaseManager extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_IMAGE = "CREATE TABLE "
             + TABLE_IMAGE + "(" + IMAGE + " BLOB," + CREATED_ON + " DATETIME,"
             + USER_NAME + " TEXT)";
+
+    //TABLE_REFERENCE_OBJECT
+    private static final String CREATE_TABLE_REFERENCE_OBJECT = "CREATE TABLE "
+            + TABLE_REFERENCE_OBJECT + "(" + OBJECT_NAME + " TEXT," + HEIGHT + " INTEGER," + WIDTH + " INTEGER,"
+            + UNIT_OF_MEASURE + " TEXT," + CREATED_ON + " DATETIME," + USER_NAME + " TEXT, PRIMARY KEY("+ OBJECT_NAME + "," + USER_NAME +"))";
 
     //Singleton
     private static DataBaseManager mInstance = null;
@@ -72,6 +85,7 @@ public class DataBaseManager extends SQLiteOpenHelper {
         Log.e(LOG, "Entering: onCreate");
         aSQLiteDatabase.execSQL(CREATE_TABLE_USERS);
         aSQLiteDatabase.execSQL(CREATE_TABLE_IMAGE);
+        aSQLiteDatabase.execSQL(CREATE_TABLE_REFERENCE_OBJECT);
     }
 
     @Override
@@ -80,6 +94,7 @@ public class DataBaseManager extends SQLiteOpenHelper {
         Log.e(LOG, "Entering: onUpgrade OldVersion["+aOldVersion+"] NewVersion["+aNewVersion+"]");
         aSQLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         aSQLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_IMAGE);
+        aSQLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_REFERENCE_OBJECT);
 
         // create new tables
         onCreate(aSQLiteDatabase);
@@ -163,7 +178,7 @@ public class DataBaseManager extends SQLiteOpenHelper {
     /*
     * Creating a Image
     */
-    public boolean CreateAImage(ImageSchema aImage) {
+    public boolean CreateAnImage(ImageSchema aImage) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -181,7 +196,7 @@ public class DataBaseManager extends SQLiteOpenHelper {
     */
     public List<ImageSchema> getAllImagesForUser(String aUserName) {
         List<ImageSchema> imageList = new ArrayList<ImageSchema>();
-        String selectQuery = "SELECT  * FROM " + TABLE_IMAGE
+        String selectQuery = "SELECT "+ROW_ID+", * FROM " + TABLE_IMAGE
                 + " WHERE " + USER_NAME + " = '" + aUserName +"'";
 
         Log.e(LOG, selectQuery);
@@ -197,6 +212,7 @@ public class DataBaseManager extends SQLiteOpenHelper {
                 //convert BLOB to image
                 byte[] byteArray = c.getBlob((c.getColumnIndex(IMAGE)));
                 Bitmap bitmapImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+                imageSchema.setId((c.getInt(c.getColumnIndex(ROW_ID))));
                 imageSchema.setImage(bitmapImage);
                 imageSchema.setUserName((c.getString(c.getColumnIndex(USER_NAME))));
                 imageSchema.setCreatedOn(c.getString(c.getColumnIndex(CREATED_ON)));
@@ -209,6 +225,95 @@ public class DataBaseManager extends SQLiteOpenHelper {
         c.close();
         return imageList;
     }
+
+    /*
+* get single User
+*/
+    public ImageSchema getImageById(Integer aImageId) {
+        Log.e(LOG, "Entering: getImageById");
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT "+ROW_ID+", * FROM " + TABLE_IMAGE
+                + " WHERE " + ROW_ID + " = " + aImageId.toString();
+
+        Log.e(LOG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        ImageSchema image = new ImageSchema();
+        //convert BLOB to image
+        byte[] byteArray = c.getBlob((c.getColumnIndex(IMAGE)));
+        Bitmap bitmapImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+        image.setId((c.getInt(c.getColumnIndex(ROW_ID))));
+        image.setImage(bitmapImage);
+        image.setUserName((c.getString(c.getColumnIndex(USER_NAME))));
+        image.setCreatedOn(c.getString(c.getColumnIndex(CREATED_ON)));
+
+        c.close();
+        return image;
+    }
+
+
+    //******************************Reference object Table function*********************************
+
+    /*
+    * Creating a Reference object
+    */
+    public boolean CreateAReferenceObject(ReferenceObjectSchema aObject) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(OBJECT_NAME, aObject.getObjectName());
+        values.put(HEIGHT, aObject.getHeight());
+        values.put(WIDTH, aObject.getWidth());
+        values.put(UNIT_OF_MEASURE, aObject.getUnitOfMeasure());
+        values.put(CREATED_ON, getDateTime());
+        values.put(USER_NAME, aObject.getUserName());
+
+        // insert row
+        Log.e(LOG, "Insert: Reference Object["+aObject.getObjectName()+"] User["+aObject.getUserName()+"]");
+        return db.insert(TABLE_REFERENCE_OBJECT,null,values) > 0;
+    }
+
+    /*
+* getting all Reference objects for user
+*/
+    public List<ReferenceObjectSchema> getAllReferenceObjectsForUser(String aUserName) {
+        List<ReferenceObjectSchema> objectList = new ArrayList<ReferenceObjectSchema>();
+        String selectQuery = "SELECT "+ROW_ID+", * FROM " + TABLE_REFERENCE_OBJECT
+                + " WHERE " + USER_NAME + " = '" + aUserName +"'";
+
+        Log.e(LOG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        Log.e(LOG, "getAllReferenceObjectsForUser Count["+c.getCount()+"]");
+        if (c.getCount() > 0 ) {
+            c.moveToFirst();
+            do {
+                ReferenceObjectSchema referenceObjectSchema = new ReferenceObjectSchema();
+                referenceObjectSchema.setId((c.getInt(c.getColumnIndex(ROW_ID))));
+                referenceObjectSchema.setObjectName(c.getString(c.getColumnIndex(OBJECT_NAME)));
+                referenceObjectSchema.setHeight(c.getInt(c.getColumnIndex(HEIGHT)));
+                referenceObjectSchema.setWidth(c.getInt(c.getColumnIndex(WIDTH)));
+                referenceObjectSchema.setUnitOfMeasure(c.getString(c.getColumnIndex(UNIT_OF_MEASURE)));
+                referenceObjectSchema.setCreatedOn(c.getString(c.getColumnIndex(CREATED_ON)));
+                referenceObjectSchema.setUserName((c.getString(c.getColumnIndex(USER_NAME))));
+
+                // adding to imageList
+                objectList.add(referenceObjectSchema);
+            } while (c.moveToNext());
+        }
+
+        c.close();
+        return objectList;
+    }
+
+
 
 
     //************************************Helper functions***************
