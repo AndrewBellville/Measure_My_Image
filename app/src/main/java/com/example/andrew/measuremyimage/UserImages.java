@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -43,7 +44,7 @@ public class UserImages extends Activity {
 
     private String userName;
     private TableLayout imageTable;
-    private boolean isDelete = false; //TODO need to be able to delete images
+    private boolean isDelete = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,11 +142,14 @@ public class UserImages extends Activity {
     // handles the image click
     public void ImageClickHandler(View aView) {
         Log.e(LOG, "Entering: ImageClickHandler");
+        //get image that was clicked
+        ImageSchemaView temp = (ImageSchemaView) aView;
         if (isDelete) {
+            dbManager.DeleteAnImage(temp.getSchema().getId());
+            //call to reload images
+            LoadUserImages();
 
         } else {
-            //get image that was clicked
-            ImageSchemaView temp = (ImageSchemaView) aView;
             //Bitmap bitmap = ((BitmapDrawable)temp.getDrawable()).getBitmap();
             Integer id = temp.getSchema().getId();
             Log.e(LOG, id.toString());
@@ -223,6 +227,12 @@ public class UserImages extends Activity {
             textView.setText("No Images");
             imageTable.addView(textView);
         }
+    }
+
+    public void onRadioButtonClicked(View view) {
+        // Is the button now checked?
+        if(isDelete) ((RadioButton) view).setChecked(false);
+        isDelete = ((RadioButton) view).isChecked();
     }
 
 }

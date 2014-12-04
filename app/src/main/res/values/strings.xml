@@ -15,6 +15,8 @@
     <string name="UnitOfMeasure">Unit Of Measure</string>
     <string name="CreateObject">Create Object</string>
     <string name="Distance">Distance :</string>
+    <string name="DeleteImages">Delete Images</string>
+    <string name="DeleteObject">Delete Object</string>
     <string name="ReferenceObject">Reference Object :</string>
     <string name="title_activity_user_profile">UserProfile</string>
     <string name="title_activity_user_images">UserImages</string>

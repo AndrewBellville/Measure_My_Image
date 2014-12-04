@@ -27,6 +27,7 @@ public class ReferenceObject extends ActionBarActivity {
     private TextView objectName;
     private TextView height;
     private TextView width;
+    private TextView errorText;
     private Spinner spinner;
     private String userName;
     private int spinnerPos = 0;
@@ -47,6 +48,7 @@ public class ReferenceObject extends ActionBarActivity {
         height = (TextView)findViewById(R.id.HeightEditText);
         width = (TextView)findViewById(R.id.WidthEditText);
         spinner = (Spinner)findViewById(R.id.UnitOfMeasureSpinner);
+        errorText = (TextView)findViewById(R.id.ErrorTextView);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -79,7 +81,11 @@ public class ReferenceObject extends ActionBarActivity {
         String tHeight = height.getText().toString();
         String tWidth = width.getText().toString();
 
-        if(lObjectName == "" || tHeight == "" || tWidth == "" || spinnerPos == 0) return;
+        if(lObjectName == "" || tHeight == "" || tWidth == "" || spinnerPos == 0)
+        {
+            errorText.setText("Blank Object Data");
+            return;
+        }
 
         int lHeight = Integer.parseInt(tHeight);
         int lWidth = Integer.parseInt(tWidth);
@@ -88,12 +94,18 @@ public class ReferenceObject extends ActionBarActivity {
         ReferenceObjectSchema referenceObjectSchema =
                 new ReferenceObjectSchema(lObjectName,lHeight,lWidth,spinner.getItemAtPosition(spinnerPos).toString(),userName);
 
-        dbManager.CreateAReferenceObject(referenceObjectSchema);
+        if(!dbManager.CreateAReferenceObject(referenceObjectSchema))
+        {
+            errorText.setText("Duplicate Object Name");
+            return;
+        }
 
         //Reset all fields
         objectName.setText("");
         height.setText("");
         width.setText("");
         spinner.setSelection(0);
+
+        this.finish();
     }
 }
