@@ -15,34 +15,29 @@ public class UserProfile extends TabActivity {
     // Log cat tag
     private static final String LOG = "UserProfile";
 
-    //intent message
-    public final static String EXTRA_MESSAGE = "com.example.measuremyimage.MESSAGE";
-
     private String userName;
+    private UserLoggedIn userLoggedIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
         Log.e(LOG, "Entering: onCreate");
-
-        //Get intent message should be user name from Login
-        Intent intent = getIntent();
-        userName = intent.getStringExtra(UserLogin.EXTRA_MESSAGE);
+        userLoggedIn = UserLoggedIn.getInstance();
+        userName = userLoggedIn.getUser().getUserName();
         // display in the action bar
         getActionBar().setTitle(userName);
         Log.e(LOG, "User profile for ["+ userName +"] ");
 
         TabHost tabHost = getTabHost();
 
+        Intent intent;
         //Add image tab
         intent = new Intent(this, UserImages.class);
-        intent.putExtra(EXTRA_MESSAGE, userName);
         tabHost.addTab(tabHost.newTabSpec("images").setIndicator("Images").setContent(intent));
 
         //Add Reference Object tab
         intent = new Intent(this, UserReferenceObjects.class);
-        intent.putExtra(EXTRA_MESSAGE, userName);
         tabHost.addTab(tabHost.newTabSpec("object").setIndicator("Object").setContent(intent));
 
     }

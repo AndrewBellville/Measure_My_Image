@@ -31,6 +31,7 @@ public class ReferenceObject extends ActionBarActivity {
     private String userName;
     private int spinnerPos = 0;
     private DataBaseManager dbManager;
+    private UserLoggedIn userLoggedIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +39,8 @@ public class ReferenceObject extends ActionBarActivity {
         setContentView(R.layout.activity_reference_object);
         Log.e(LOG, "Entering: onCreate");
         //getActionBar().hide();
-        Intent intent = getIntent();
-        userName = intent.getStringExtra(UserProfile.EXTRA_MESSAGE);
+        userLoggedIn = UserLoggedIn.getInstance();
+        userName = userLoggedIn.getUser().getUserName();
         dbManager = DataBaseManager.getInstance(getApplicationContext());
 
         objectName = (TextView)findViewById(R.id.ObjectNameEditText);

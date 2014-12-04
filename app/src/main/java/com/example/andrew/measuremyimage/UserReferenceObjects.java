@@ -27,12 +27,10 @@ public class UserReferenceObjects extends Activity {
     // Log cat tag
     private static final String LOG = "UserReferenceObjects";
 
-    //intent message
-    public final static String EXTRA_MESSAGE = "com.example.measuremyimage.MESSAGE";
-
     private String userName;
     private ListView ObjectListView;
     private DataBaseManager dbManager;
+    private UserLoggedIn userLoggedIn;
 
 
     @Override
@@ -40,9 +38,8 @@ public class UserReferenceObjects extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_reference_objects);
         Log.e(LOG, "Entering: onCreate");
-
-        Intent intent = getIntent();
-        userName = intent.getStringExtra(UserProfile.EXTRA_MESSAGE);
+        userLoggedIn = UserLoggedIn.getInstance();
+        userName = userLoggedIn.getUser().getUserName();
         ObjectListView = (ListView)findViewById(R.id.ReferenceObjectList);
         dbManager = DataBaseManager.getInstance(getApplicationContext());
 
@@ -90,7 +87,6 @@ public class UserReferenceObjects extends Activity {
         Log.e(LOG, "Entering: onCreateClick");
 
         Intent intent = new Intent(this, ReferenceObject.class);
-        intent.putExtra(EXTRA_MESSAGE, userName);
         //start next activity
         startActivity(intent);
     }
