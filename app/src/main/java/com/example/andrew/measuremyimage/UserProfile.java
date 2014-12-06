@@ -42,7 +42,6 @@ public class UserProfile extends TabActivity {
 
         //Add Distance tab
         intent = new Intent(this, UserDistance.class);
-        intent.putExtra(EXTRA_MESSAGE, userName);
         tabHost.addTab(tabHost.newTabSpec("distance").setIndicator("Distance").setContent(intent));
     }
 

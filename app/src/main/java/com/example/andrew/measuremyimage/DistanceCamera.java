@@ -24,13 +24,16 @@ package com.example.andrew.measuremyimage;
         import android.view.SurfaceHolder;
         import android.view.View;
         import android.view.ViewGroup.LayoutParams;
+        import android.widget.AdapterView;
+        import android.widget.ArrayAdapter;
         import android.widget.Button;
         import android.widget.LinearLayout;
+        import android.widget.Spinner;
         import android.widget.Toast;
-
         import android.widget.TextView;
-        import android.content.Intent;
         import android.content.Context;
+        import com.example.andrew.measuremyimage.DataBase.DataBaseManager;
+        import com.example.andrew.measuremyimage.DataBase.PreferenceSchema;
 
 public class DistanceCamera extends Activity implements SensorEventListener, SurfaceHolder.Callback
 {
@@ -40,22 +43,19 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
     float[] lastVectorOrientation = new float[3];
     float[] firstVectorOrientation = new float[3];
     float[] secondVectorOrientation = new float[3];
+
     double firstVectorDistanceY=0.0;
     double secondVectorDistanceY=0.0;
     double lastDistanceCalculated=0.0;
     double lastAzimuthDeviation=0.0;
     double firstVectorHeight=0.0;
     double secondVectorHeight=0.0;
-    double lastVectorHeight = 64.0;
     String distanceStatus="Get First Point";
     private static final int AZIMUTH = 0;
     private static final int PITCH = 1;
     private static final int ROLL = 2;
     // Log cat tag
     private static final String LOG = "DistanceCamera";
-    public final static String EXTRA_MESSAGE = "com.example.measuremyimage.MESSAGE";
-    private String userName;
-
 
     Camera camera;
     CameraPreviewView surfaceView;
@@ -65,16 +65,40 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
     Button buttonGetPoint;
     Button buttonChangeHeight;
     TextView textHeight;
-    final int RESULT_SAVEIMAGE = 0;
-
+    private DataBaseManager dbManager;
+    private UserLoggedIn userLoggedIn;
+    private String userName;
+    private Spinner spinner;
+    private int spinnerPos = 0;
+    private PreferenceSchema userPreference;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_distance_camera);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        Intent intent = getIntent();
-        userName = intent.getStringExtra(UserDistance.EXTRA_MESSAGE);
+        userLoggedIn = UserLoggedIn.getInstance();
+        userName = userLoggedIn.getUser().getUserName();
+        dbManager = DataBaseManager.getInstance(getApplicationContext());
+        if ( dbManager.DoesPreferenceExist(userName) )
+        {
+            userPreference = dbManager.getPreference(userName);
+        }
+        else
+        {
+             userPreference = new PreferenceSchema(userName, 64, "in.");
+             spinnerPos=1;
+             if (! dbManager.CreateAPreference(userPreference))
+             {
+                 Toast toast = Toast.makeText(
+                         getApplicationContext(),
+                         "Error: Insert of default Camera Height Preference did not save to Database!",
+                         Toast.LENGTH_SHORT);
+                 toast.setGravity(Gravity.LEFT,0,0);
+                 toast.show();
+             }
+        }
+
         distanceStatus="Get First Point";
         firstVectorOrientation[AZIMUTH] = 0;
         firstVectorOrientation[PITCH] = 0;
@@ -107,6 +131,7 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
         this.addContentView(viewDistanceCameraControl, layoutParamsControl);
         textHeight = (TextView)findViewById(R.id.editHeight);
         textHeight.setTextColor(Color.GREEN);
+        spinner = (Spinner)findViewById(R.id.UnitOfMeasureSpinner);
         buttonChangeHeight = (Button)findViewById(R.id.changeheight);
         buttonChangeHeight.setText("View Height");
         buttonChangeHeight.setTextColor(Color.GREEN);
@@ -126,17 +151,52 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
             public void onClick(View arg0) {
                 if (buttonChangeHeight.getText().toString().equalsIgnoreCase("Change Height") )
                 {
-                    lastVectorHeight = Double.parseDouble(textHeight.getText().toString());
+                    if ( Double.parseDouble(textHeight.getText().toString())> 0)
+                        userPreference.setCameraHeight(Double.parseDouble(textHeight.getText().toString()));
+
+                    if ( spinnerPos > 0)
+                        userPreference.setUnitOfMeasure(spinner.getItemAtPosition(spinnerPos).toString());
+
+                    if ( dbManager.DoesPreferenceExist(userName) )
+                    {
+                        if (! dbManager.modifyPreference(userPreference))
+                        {
+                            Toast toast = Toast.makeText(
+                                    getApplicationContext(),
+                                    "Error: Update to Camera Height Preference did not save to Database!",
+                                    Toast.LENGTH_SHORT);
+                            toast.setGravity(Gravity.LEFT,0,0);
+                            toast.show();
+                        }
+                    }
+                    else
+                    {
+                        if (! dbManager.CreateAPreference(userPreference))
+                        {
+                            Toast toast = Toast.makeText(
+                                    getApplicationContext(),
+                                    "Error: Insert of Camera Height Preference did not save to Database!",
+                                    Toast.LENGTH_SHORT);
+                            toast.setGravity(Gravity.LEFT,0,0);
+                            toast.show();
+                        }
+                    }
+
                     buttonChangeHeight.setText("View Height");
                     textHeight.setEnabled(false);
                     textHeight.setVisibility(View.INVISIBLE );
+                    spinner.setEnabled(false);
+                    spinner.setVisibility(View.INVISIBLE );
                 }
                 else
                 {
                     buttonChangeHeight.setText("Change Height");
                     textHeight.setEnabled(true);
-                    textHeight.setText(String.valueOf(lastVectorHeight));
+                    textHeight.setText(String.valueOf(Double.toString(userPreference.getCameraHeight())));
                     textHeight.setVisibility(View.VISIBLE );
+                    spinner.setEnabled(true);
+                    spinner.setSelection(spinnerPos);
+                    spinner.setVisibility(View.VISIBLE );
                 }
             }
         });
@@ -154,6 +214,27 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
                 camera.autoFocus(myAutoFocusCallback);
             }
         });
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
+                spinnerPos = pos;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.Units_of_Measure, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+
     }
 
     /** Called when the user clicks the Send button */
@@ -163,7 +244,7 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
             firstVectorOrientation[AZIMUTH] = lastVectorOrientation[AZIMUTH];
             firstVectorOrientation[PITCH] = lastVectorOrientation[PITCH];
             firstVectorOrientation[ROLL] = lastVectorOrientation[ROLL];
-            firstVectorHeight = lastVectorHeight;
+            firstVectorHeight = userPreference.getCameraHeight();
             firstVectorDistanceY = (Math.tan(Math.toRadians(Math.abs(firstVectorOrientation[PITCH]))) * firstVectorHeight );
             secondVectorOrientation[AZIMUTH] = 0;
             secondVectorOrientation[PITCH] = 0;
@@ -196,7 +277,7 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
             secondVectorOrientation[AZIMUTH] = lastVectorOrientation[AZIMUTH];
             secondVectorOrientation[PITCH] = lastVectorOrientation[PITCH];
             secondVectorOrientation[ROLL] = lastVectorOrientation[ROLL];
-            secondVectorHeight = lastVectorHeight;
+            secondVectorHeight = userPreference.getCameraHeight();
             secondVectorDistanceY = (Math.tan(Math.toRadians(Math.abs(secondVectorOrientation[PITCH]))) * secondVectorHeight);
 
             // Law of Cosines
@@ -251,13 +332,13 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
                 lastDistanceCalculated = Math.sqrt(firstSquared + secondSquared - ab2CosC);
             }
 
-            String toastMsg = String.format("Second Point: \n\t Height = %.2f inches,"
+            String toastMsg = String.format("Second Point: \n\t Height = %.2f " + userPreference.getUnitOfMeasure() + ","
                             + "\n\t Azimuth Angle = %.2f degrees,"
                             + "\n\t Pitch Angle = %.2f degrees,"
                             + "\n\t Roll Angle = %.2f degrees,"
-                            + "\n\t Distance = %.2f inches."
+                            + "\n\t Distance = %.2f  " + userPreference.getUnitOfMeasure()
                             + "\n\nCalculated Distance: \n\t Azimuth Angle = %.2f degrees,"
-                            + "\n\t Distance = %.2f inches.",
+                            + "\n\t Distance = %.2f " + userPreference.getUnitOfMeasure(),
                     secondVectorHeight ,secondVectorOrientation[AZIMUTH],
                     Math.abs(secondVectorOrientation[PITCH]),
                     secondVectorOrientation[ROLL],secondVectorDistanceY,
@@ -268,7 +349,7 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
                     toastMsg,
                     Toast.LENGTH_SHORT);
 
-            toast.setGravity(Gravity.LEFT,0,0);
+            toast.setGravity(Gravity.LEFT, 0, 0);
             toast.show();
             distanceStatus = "Get First Point";
             buttonGetPoint.setText(distanceStatus);
@@ -298,18 +379,18 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
         public void onAutoFocus(boolean arg0, Camera arg1) {
             // TODO Auto-generated method stub
             String toastMsg = String.format(
-                    "First Point: \n\t Height = %.2f inches,"
+                    "First Point: \n\t Height = %.2f " + userPreference.getUnitOfMeasure() + ","
                             + "\n\t Azimuth Angle = %.2f degrees,"
                             + "\n\t Pitch Angle = %.2f degrees,"
                             + "\n\t Roll Angle = %.2f degrees,"
-                            + "\n\t Distance = %.2f inches"
-                            + "\n\nSecond Point: \n\t Height = %.2f inches,"
+                            + "\n\t Distance = %.2f " + userPreference.getUnitOfMeasure()
+                            + "\n\nSecond Point: \n\t Height = %.2f " + userPreference.getUnitOfMeasure() + ","
                             + "\n\t Azimuth Angle = %.2f degrees,"
                             + "\n\t Pitch Angle = %.2f degrees,"
                             + "\n\t Roll Angle = %.2f degrees,"
-                            + "\n\t Distance = %.2f inches."
+                            + "\n\t Distance = %.2f " + userPreference.getUnitOfMeasure()
                             + "\n\nCalculated Distance: \n\t Azimuth Angle = %.2f degrees,"
-                            + "\n\t Distance = %.2f inches.",
+                            + "\n\t Distance = %.2f " + userPreference.getUnitOfMeasure(),
                     firstVectorHeight ,firstVectorOrientation[AZIMUTH],
                     Math.abs(firstVectorOrientation[PITCH]),
                     firstVectorOrientation[ROLL],firstVectorDistanceY,
@@ -327,10 +408,12 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
             toast.show();
 
             buttonGetPoint.setEnabled(true);
-            if (distanceStatus.equalsIgnoreCase("Get Second Point"))
+            if (distanceStatus.equalsIgnoreCase("Get Second Point")) {
                 buttonChangeHeight.setEnabled(false);
-            else
+            }
+            else {
                 buttonChangeHeight.setEnabled(true);
+            }
         }};
 
     ShutterCallback myShutterCallback = new ShutterCallback(){
@@ -498,9 +581,9 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
                 }
                 i = i + 1;
             }
-            double currentDistance = (Math.tan(Math.toRadians(Math.abs(lastVectorOrientation[PITCH]))) * lastVectorHeight );
-            String outfloat = String.format("Current:\nHeight[%.1f]in\nAzimuth[%.2f]deg\nPitch[%.2f]deg\nRoll[%.2f]deg\nDistance[%.2f]in"
-                    , lastVectorHeight, lastVectorOrientation[AZIMUTH],Math.abs(lastVectorOrientation[PITCH]), lastVectorOrientation[ROLL],currentDistance);
+            double currentDistance = (Math.tan(Math.toRadians(Math.abs(lastVectorOrientation[PITCH]))) * userPreference.getCameraHeight() );
+            String outfloat = String.format("Current:\nHeight[%.1f] " + userPreference.getUnitOfMeasure() +   "\nAzimuth[%.2f]deg\nPitch[%.2f]deg\nRoll[%.2f]deg\nDistance[%.2f]" + userPreference.getUnitOfMeasure()
+                    , userPreference.getCameraHeight(), lastVectorOrientation[AZIMUTH],Math.abs(lastVectorOrientation[PITCH]), lastVectorOrientation[ROLL],currentDistance);
             textOrientation.setText(outfloat);
         }
     }

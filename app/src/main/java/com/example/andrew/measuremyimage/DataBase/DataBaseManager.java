@@ -31,6 +31,7 @@ public class DataBaseManager extends SQLiteOpenHelper {
     private static final String TABLE_USERS = "Users";
     private static final String TABLE_IMAGE = "Image";
     private static final String TABLE_REFERENCE_OBJECT = "ReferenceObject";
+    private static final String TABLE_PREFERENCE = "Preference";
 
     // Common column names across both tables
     private static final String ROW_ID = "rowid";
@@ -49,6 +50,9 @@ public class DataBaseManager extends SQLiteOpenHelper {
     private static final String WIDTH = "Width";
     private static final String UNIT_OF_MEASURE = "UnitOfMeasure";
 
+    // PREFERENCE column names
+    private static final String CAMERA_HEIGHT = "CameraHeight";
+
     // Table Create Statements
     //CREATE_TABLE_USERS
     private static final String CREATE_TABLE_USERS = "CREATE TABLE "
@@ -64,6 +68,11 @@ public class DataBaseManager extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_REFERENCE_OBJECT = "CREATE TABLE "
             + TABLE_REFERENCE_OBJECT + "(" + OBJECT_NAME + " TEXT," + HEIGHT + " INTEGER," + WIDTH + " INTEGER,"
             + UNIT_OF_MEASURE + " TEXT," + CREATED_ON + " DATETIME," + USER_NAME + " TEXT, PRIMARY KEY("+ OBJECT_NAME + "," + USER_NAME +"))";
+
+    //TABLE_REFERENCE_OBJECT
+    private static final String CREATE_TABLE_PREFERENCE = "CREATE TABLE "
+            + TABLE_PREFERENCE + "(" + USER_NAME + " TEXT," + CAMERA_HEIGHT + " DOUBLE,"
+            + UNIT_OF_MEASURE + " TEXT," + CREATED_ON + " DATETIME, PRIMARY KEY("+ USER_NAME +"))";
 
     //Singleton
     private static DataBaseManager mInstance = null;
@@ -86,6 +95,7 @@ public class DataBaseManager extends SQLiteOpenHelper {
         aSQLiteDatabase.execSQL(CREATE_TABLE_USERS);
         aSQLiteDatabase.execSQL(CREATE_TABLE_IMAGE);
         aSQLiteDatabase.execSQL(CREATE_TABLE_REFERENCE_OBJECT);
+        aSQLiteDatabase.execSQL(CREATE_TABLE_PREFERENCE);
     }
 
     @Override
@@ -95,6 +105,7 @@ public class DataBaseManager extends SQLiteOpenHelper {
         aSQLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         aSQLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_IMAGE);
         aSQLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_REFERENCE_OBJECT);
+        aSQLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_PREFERENCE);
 
         // create new tables
         onCreate(aSQLiteDatabase);
@@ -331,6 +342,96 @@ public class DataBaseManager extends SQLiteOpenHelper {
                 new String[] { aName, aUserName});
     }
 
+
+    //******************************Preference Table function*********************************
+
+    /*
+    * Creating a Preference
+    */
+    public boolean CreateAPreference(PreferenceSchema aPreference) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(USER_NAME, aPreference.getUserName());
+        values.put(CAMERA_HEIGHT, aPreference.getCameraHeight());
+        values.put(UNIT_OF_MEASURE, aPreference.getUnitOfMeasure());
+        values.put(CREATED_ON, getDateTime());
+
+        // insert row
+        Log.e(LOG, "Insert: User["+aPreference.getUserName()+"] Camera Height["+ Double.toString(aPreference.getCameraHeight()) +
+                "] Unit Of Measure["+aPreference.getUnitOfMeasure() +"]");
+        return db.insert(TABLE_PREFERENCE ,null,values) > 0;
+    }
+
+    /*
+    * get single Preference by User
+    */
+    public PreferenceSchema getPreference(String aUserName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT  * FROM " + TABLE_PREFERENCE + " WHERE "
+                + USER_NAME + " = '" + aUserName+"'";
+
+        Log.e(LOG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        PreferenceSchema preference = new PreferenceSchema();
+        preference.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
+        preference.setCameraHeight(c.getDouble(c.getColumnIndex(CAMERA_HEIGHT)));
+        preference.setUnitOfMeasure(c.getString(c.getColumnIndex(UNIT_OF_MEASURE)));
+
+        c.close();
+        return preference;
+    }
+
+    /*
+    * Return true if Preference by User exists
+    */
+    public boolean DoesPreferenceExist(String aUserName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        boolean retVal = false;
+
+        String selectQuery = "SELECT  * FROM " + TABLE_PREFERENCE + " WHERE "
+                + USER_NAME + " = '" + aUserName + "'";
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // record found return true
+        if (c.getCount() > 0)
+            retVal = true;
+
+        c.close();
+        return retVal;
+    }
+
+    /*
+    * modify a single Preference
+    */
+    public boolean modifyPreference(PreferenceSchema aPreference) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues newValues = new ContentValues();
+        newValues.put(CAMERA_HEIGHT, aPreference.getCameraHeight());
+        newValues.put(UNIT_OF_MEASURE, aPreference.getUnitOfMeasure());
+        newValues.put(CREATED_ON, getDateTime());
+
+        db.beginTransaction();
+        int i = 0;
+        try {
+            i = db.update(TABLE_PREFERENCE , newValues, USER_NAME + "='" + aPreference.getUserName() + "'", null);
+
+            if ( i > 0 )
+                db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+        }
+        return i > 0;
+    }
 
     //************************************Helper functions***************
     /*

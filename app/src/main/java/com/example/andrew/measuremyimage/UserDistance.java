@@ -14,20 +14,21 @@ import android.view.View;
 import android.content.Intent;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import com.example.andrew.measuremyimage.DataBase.DataBaseManager;
 
 public class UserDistance extends Activity implements SensorEventListener
 {
     TextView textListSensors;
-    TextView textGravity;
     SensorManager sensorManager;
     Sensor mOrientation;
     Sensor mAccelerometer;
     Button buttonStartDistanceCamera;
+    private DataBaseManager dbManager;
+    private UserLoggedIn userLoggedIn;
+    private String userName;
 
     // Log cat tag
     private static final String LOG = "UserDistance";
-    public final static String EXTRA_MESSAGE = "com.example.measuremyimage.MESSAGE";
-    private String userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +36,10 @@ public class UserDistance extends Activity implements SensorEventListener
         setContentView(R.layout.activity_user_distance);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         Intent intent = getIntent();
-        userName = intent.getStringExtra(UserProfile.EXTRA_MESSAGE);
+        userLoggedIn = UserLoggedIn.getInstance();
+        userName = userLoggedIn.getUser().getUserName();
+        dbManager = DataBaseManager.getInstance(getApplicationContext());
+
 // Find views
         View myrelativeLayout = findViewById(R.id.my_id);
         textListSensors = (TextView) findViewById(R.id.list_sensors);
@@ -135,7 +139,6 @@ public class UserDistance extends Activity implements SensorEventListener
     public void startDistanceCamera(View view) {
         // Do something in response to button
         Intent intent = new Intent(this, DistanceCamera.class);
-        intent.putExtra(EXTRA_MESSAGE, userName);
         startActivity(intent);
     }
 

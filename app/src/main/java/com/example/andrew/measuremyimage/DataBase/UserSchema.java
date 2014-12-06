@@ -42,12 +42,8 @@ public class UserSchema {
     public String getUserName() {
         return this.UserName;
     }
-
     public String getPassword() {
         return this.Password;
     }
-
-    public String getCreatedOn() {
-        return this.CreatedOn;
-    }
+    public String getCreatedOn() { return this.CreatedOn; }
 }

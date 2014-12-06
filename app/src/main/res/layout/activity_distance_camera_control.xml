@@ -28,6 +28,15 @@ android:weightSum="1">
         android:enabled="false"
         android:editable="true" />
 
+    <Spinner
+        android:layout_width="194dp"
+        android:layout_height="44dp"
+        android:id="@+id/UnitOfMeasureSpinner"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="right"
+        android:visibility="visible"
+        android:enabled="false" />
+
     <Button
         android:id="@+id/changeheight"
         android:layout_width="187dp"
