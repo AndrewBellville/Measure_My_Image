@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:id="@+id/background"
+android:orientation="vertical"
+android:layout_width="fill_parent"
+android:layout_height="fill_parent"
+android:gravity="bottom"
+android:weightSum="1">
+
+    <TextView
+        android:layout_width="257dp"
+        android:layout_height="82dp"
+        android:text="Orientation"
+        android:layout_gravity="top"
+        android:id="@+id/textListOrientation"
+        android:padding="@dimen/activity_horizontal2_margin"
+        android:layout_weight="0.95" />
+
+    <EditText
+        android:layout_width="193dp"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:ems="10"
+        android:id="@+id/editHeight"
+        android:layout_gravity="right"
+        android:visibility="visible"
+        android:enabled="false"
+        android:editable="true" />
+
+    <Button
+        android:id="@+id/changeheight"
+        android:layout_width="187dp"
+        android:layout_height="wrap_content"
+        android:text="View Height "
+        android:layout_margin="10px"
+        android:layout_gravity="right"
+        android:enabled="true" />
+
+    <Button
+    android:id="@+id/getpoint"
+    android:layout_width="184dp"
+    android:layout_height="wrap_content"
+    android:text=" * Get 1st Point "
+    android:layout_gravity="right"
+    android:layout_margin="10px"
+    />
+</LinearLayout>

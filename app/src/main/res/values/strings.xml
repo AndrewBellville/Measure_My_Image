@@ -19,8 +19,9 @@
     <string name="title_activity_image_display">ImageDisplay</string>
     <string name="title_activity_reference_object">ReferenceObject</string>
     <string name="title_activity_user_reference_objects">UserReferenceObjects</string>
-
-
+    <string name="button_distance">START</string>
+    <string name="title_activity_sensor">SENSOR ORIENTATION</string>
+    <string name="title_activity_userdistance">Distance Calculation</string>
     <string-array name="Units_of_Measure">
         <item>Select</item>
         <item>in.</item>
