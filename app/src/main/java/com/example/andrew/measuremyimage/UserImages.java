@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -39,19 +40,19 @@ public class UserImages extends Activity {
     private static int RESULT_LOAD_IMAGE = 1;
     private static int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 2;
     private DataBaseManager dbManager;
+    private UserLoggedIn userLoggedIn;
 
-    //TODO need a better way of knowing he is logged it without sending user name to each activity
     private String userName;
     private TableLayout imageTable;
-    private boolean isDelete = false; //TODO need to be able to delete images
+    private boolean isDelete = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_images);
         Log.e(LOG, "Entering: onCreate");
-        Intent intent = getIntent();
-        userName = intent.getStringExtra(UserProfile.EXTRA_MESSAGE);
+        userLoggedIn = UserLoggedIn.getInstance();
+        userName = userLoggedIn.getUser().getUserName();
         dbManager = DataBaseManager.getInstance(getApplicationContext());
         imageTable = (TableLayout) findViewById(R.id.ImageTable);
 
@@ -140,11 +141,15 @@ public class UserImages extends Activity {
 
     // handles the image click
     public void ImageClickHandler(View aView) {
+        Log.e(LOG, "Entering: ImageClickHandler");
+        //get image that was clicked
+        ImageSchemaView temp = (ImageSchemaView) aView;
         if (isDelete) {
+            dbManager.DeleteAnImage(temp.getSchema().getId());
+            //call to reload images
+            LoadUserImages();
 
         } else {
-            //get image that was clicked
-            ImageSchemaView temp = (ImageSchemaView) aView;
             //Bitmap bitmap = ((BitmapDrawable)temp.getDrawable()).getBitmap();
             Integer id = temp.getSchema().getId();
             Log.e(LOG, id.toString());
@@ -191,6 +196,7 @@ public class UserImages extends Activity {
     }
 
     private Bitmap GetImageFromData(Intent aData) {
+        Log.e(LOG, "Entering: GetImageFromData");
         Uri selectedImage = aData.getData();
         String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
@@ -205,9 +211,10 @@ public class UserImages extends Activity {
         Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
         Bitmap scaledBitmap;
 
-        if(yourSelectedImage.getWidth() > 1000 || yourSelectedImage.getHeight() > 1000)
+        Log.e(LOG, Integer.toString(yourSelectedImage.getWidth())+"  "+Integer.toString(yourSelectedImage.getHeight()));
+        if(yourSelectedImage.getWidth() > 1000 || yourSelectedImage.getHeight() > 1500)
         {
-            yourSelectedImage = Bitmap.createScaledBitmap(yourSelectedImage, 1000, 1000, true);
+            yourSelectedImage = Bitmap.createScaledBitmap(yourSelectedImage, yourSelectedImage.getWidth()/2, yourSelectedImage.getHeight()/2, true);
         }
 
         return yourSelectedImage;
@@ -220,6 +227,12 @@ public class UserImages extends Activity {
             textView.setText("No Images");
             imageTable.addView(textView);
         }
+    }
+
+    public void onRadioButtonClicked(View view) {
+        // Is the button now checked?
+        if(isDelete) ((RadioButton) view).setChecked(false);
+        isDelete = ((RadioButton) view).isChecked();
     }
 
 }

@@ -27,10 +27,12 @@ public class ReferenceObject extends ActionBarActivity {
     private TextView objectName;
     private TextView height;
     private TextView width;
+    private TextView errorText;
     private Spinner spinner;
     private String userName;
     private int spinnerPos = 0;
     private DataBaseManager dbManager;
+    private UserLoggedIn userLoggedIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,14 +40,15 @@ public class ReferenceObject extends ActionBarActivity {
         setContentView(R.layout.activity_reference_object);
         Log.e(LOG, "Entering: onCreate");
         //getActionBar().hide();
-        Intent intent = getIntent();
-        userName = intent.getStringExtra(UserProfile.EXTRA_MESSAGE);
+        userLoggedIn = UserLoggedIn.getInstance();
+        userName = userLoggedIn.getUser().getUserName();
         dbManager = DataBaseManager.getInstance(getApplicationContext());
 
         objectName = (TextView)findViewById(R.id.ObjectNameEditText);
         height = (TextView)findViewById(R.id.HeightEditText);
         width = (TextView)findViewById(R.id.WidthEditText);
         spinner = (Spinner)findViewById(R.id.UnitOfMeasureSpinner);
+        errorText = (TextView)findViewById(R.id.ErrorTextView);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -78,7 +81,11 @@ public class ReferenceObject extends ActionBarActivity {
         String tHeight = height.getText().toString();
         String tWidth = width.getText().toString();
 
-        if(lObjectName == "" || tHeight == "" || tWidth == "" || spinnerPos == 0) return;
+        if(lObjectName == "" || tHeight == "" || tWidth == "" || spinnerPos == 0)
+        {
+            errorText.setText("Blank Object Data");
+            return;
+        }
 
         int lHeight = Integer.parseInt(tHeight);
         int lWidth = Integer.parseInt(tWidth);
@@ -87,12 +94,18 @@ public class ReferenceObject extends ActionBarActivity {
         ReferenceObjectSchema referenceObjectSchema =
                 new ReferenceObjectSchema(lObjectName,lHeight,lWidth,spinner.getItemAtPosition(spinnerPos).toString(),userName);
 
-        dbManager.CreateAReferenceObject(referenceObjectSchema);
+        if(!dbManager.CreateAReferenceObject(referenceObjectSchema))
+        {
+            errorText.setText("Duplicate Object Name");
+            return;
+        }
 
         //Reset all fields
         objectName.setText("");
         height.setText("");
         width.setText("");
         spinner.setSelection(0);
+
+        this.finish();
     }
 }

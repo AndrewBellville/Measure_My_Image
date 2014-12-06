@@ -19,13 +19,11 @@ public class UserLogin extends ActionBarActivity {
     // Log cat tag
     private static final String LOG = "UserLogin";
 
-    //intent message
-    public final static String EXTRA_MESSAGE = "com.example.measuremyimage.MESSAGE";
-
     private TextView userName;
     private TextView password;
     private TextView message;
     private DataBaseManager dbManager;
+    private UserLoggedIn userLoggedIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +31,7 @@ public class UserLogin extends ActionBarActivity {
         setContentView(R.layout.activity_user_login);
         Log.e(LOG, "Entering: onCreate");
         dbManager = DataBaseManager.getInstance(getApplicationContext());
+        userLoggedIn = UserLoggedIn.getInstance();
         getActionBar().hide();
 
         //Link to XML onCreate of this class
@@ -64,14 +63,12 @@ public class UserLogin extends ActionBarActivity {
     {
         Log.e(LOG, "Entering: onLoginClick");
 
-        //TODO actually do something
         if (validateUserLogin())
         {
             //Create and intent which will open next activity UserProfile
             Intent intent = new Intent(this, UserProfile.class);
-            //Attach message with intent so that UserProfile knows who is login
-            String IntentMessage = userName.getText().toString();
-            intent.putExtra(EXTRA_MESSAGE, IntentMessage);
+            //set active user
+            userLoggedIn.setUser(dbManager.getUser(userName.getText().toString()));
             //start next activity
             startActivity(intent);
         }
@@ -86,7 +83,6 @@ public class UserLogin extends ActionBarActivity {
     {
         Log.e(LOG, "Entering: onCreateClick");
 
-        //TODO actually do something
         if (validateUserCreate())
         {
             message.setText("Successful Create");

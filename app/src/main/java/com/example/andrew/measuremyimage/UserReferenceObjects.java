@@ -9,7 +9,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 
@@ -27,12 +29,12 @@ public class UserReferenceObjects extends Activity {
     // Log cat tag
     private static final String LOG = "UserReferenceObjects";
 
-    //intent message
-    public final static String EXTRA_MESSAGE = "com.example.measuremyimage.MESSAGE";
-
     private String userName;
     private ListView ObjectListView;
     private DataBaseManager dbManager;
+    private UserLoggedIn userLoggedIn;
+    ArrayList<HashMap<String, String>> list;
+    private boolean isDelete = false;
 
 
     @Override
@@ -40,10 +42,16 @@ public class UserReferenceObjects extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_reference_objects);
         Log.e(LOG, "Entering: onCreate");
-
-        Intent intent = getIntent();
-        userName = intent.getStringExtra(UserProfile.EXTRA_MESSAGE);
+        userLoggedIn = UserLoggedIn.getInstance();
+        userName = userLoggedIn.getUser().getUserName();
         ObjectListView = (ListView)findViewById(R.id.ReferenceObjectList);
+        ObjectListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                objectSelect(position);
+            }
+        });
         dbManager = DataBaseManager.getInstance(getApplicationContext());
 
         LoadReferenceObjects();
@@ -61,7 +69,7 @@ public class UserReferenceObjects extends Activity {
 
         List<ReferenceObjectSchema> objectList = dbManager.getAllReferenceObjectsForUser(userName);
         if (objectList.size() > 0) {
-            ArrayList<HashMap<String, String>> list = new ArrayList<HashMap<String, String>>();
+             list = new ArrayList<HashMap<String, String>>();
 
             for(ReferenceObjectSchema obj : objectList)
             {
@@ -84,16 +92,33 @@ public class UserReferenceObjects extends Activity {
         }
     }
 
+    private void objectSelect(int aPos)
+    {
+        if(isDelete)
+        {
+            HashMap<String,String> temp = list.get(aPos);
+            dbManager.DeleteReferenceObject(temp.get("Name"),userName);
+            LoadReferenceObjects();
+        }
+        else{
+            //TODO do something
+        }
+
+    }
 
     public void onCreateClick(View aView)
     {
         Log.e(LOG, "Entering: onCreateClick");
 
         Intent intent = new Intent(this, ReferenceObject.class);
-        intent.putExtra(EXTRA_MESSAGE, userName);
         //start next activity
         startActivity(intent);
     }
 
+    public void onRadioButtonClicked(View view) {
+        // Is the button now checked?
+        if(isDelete) ((RadioButton) view).setChecked(false);
+        isDelete = ((RadioButton) view).isChecked();
+    }
 
 }

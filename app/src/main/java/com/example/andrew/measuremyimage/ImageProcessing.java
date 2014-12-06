@@ -3,9 +3,8 @@ package com.example.andrew.measuremyimage;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.util.Log;
-
-import java.security.PublicKey;
 
 /**
  * Created by Andrew on 11/10/2014.
@@ -223,7 +222,6 @@ public class ImageProcessing {
     {
         int[] pixels = new int[aBitmap.getHeight()*aBitmap.getWidth()];
         aBitmap.getPixels(pixels, 0, aBitmap.getWidth(), 0, 0, aBitmap.getWidth(), aBitmap.getHeight());
-
         for (int x = 1;x < aBitmap.getWidth(); x++) {
             for (int ly = 0; ly < aBitmap.getHeight(); ly++ ) {
                 // Pixel location and color
@@ -248,7 +246,6 @@ public class ImageProcessing {
                 }
             }
         }
-
         for (int ly = 1;ly < aBitmap.getHeight(); ly++) {
             for (int x = 0; x < aBitmap.getWidth(); x++ ) {
                 // Pixel location and color
@@ -273,10 +270,68 @@ public class ImageProcessing {
                 }
             }
         }
-
-
-
         return pixels;
     }
 
+    public ReferenceObjectDimensions FindObjectDimensions(int aX, int aY, Matrix aInvertMatrix)
+    {
+        Log.e(LOG, "Entering: FindObjectDimensions");
+
+        //TODO: edge case testing
+        ReferenceObjectDimensions referenceObjectDimensions = new ReferenceObjectDimensions();
+
+        // look to the right from point touched until first edge is found
+        for (int x=aX++;x < imageWidth - 1; x++) {
+            if(PixelComparison(new Pixel(x,aY),new Pixel(x-1,aY))) {
+                Log.e(LOG,"Right Edge found X["+ Integer.toString(x) + "] Y["+ Integer.toString(aY) +"]");
+                float[] eventXY = new float[] {x, aY};
+               // aInvertMatrix.mapPoints(eventXY);
+                Log.e(LOG,"Right Edge found X["+ Float.toString(eventXY[0]) + "] Y["+ Float.toString(eventXY[1]) +"]");
+
+                referenceObjectDimensions.setRightEdge(eventXY);
+                break;
+            }
+        }
+        Log.e(LOG, "Entering: left");
+        // look to the left from point touched until first edge is found
+        for (int x=aX--;x > 0; x--) {
+            if(PixelComparison(new Pixel(x,aY),new Pixel(x+1,aY))) {
+                Log.e(LOG,"Left Edge found X["+ Integer.toString(x) + "] Y["+ Integer.toString(aY) +"]");
+                float[] eventXY = new float[] {x, aY};
+               // aInvertMatrix.mapPoints(eventXY);
+                Log.e(LOG,"Left Edge found X["+ Float.toString(eventXY[0]) + "] Y["+ Float.toString(eventXY[1]) +"]");
+
+                referenceObjectDimensions.setLeftEdge(eventXY);
+                break;
+            }
+        }
+        Log.e(LOG, "Entering: down");
+        // look to the down from point touched until first edge is found
+        for (int y=aY++;y < imageHeight - 1; y++) {
+            if(PixelComparison(new Pixel(aX,y),new Pixel(aX,y-1))) {
+                Log.e(LOG,"Bottom Edge found X["+ Integer.toString(aX) + "] Y["+ Integer.toString(y) +"]");
+                float[] eventXY = new float[] {aX, y};
+                //aInvertMatrix.mapPoints(eventXY);
+                Log.e(LOG,"Left Edge found X["+ Float.toString(eventXY[0]) + "] Y["+ Float.toString(eventXY[1]) +"]");
+
+                referenceObjectDimensions.setBottomEdge(eventXY);
+                break;
+            }
+        }
+        Log.e(LOG, "Entering: up");
+        // look to the up from point touched until first edge is found
+        for (int y =aY--;y > 0; y--) {
+            if(PixelComparison(new Pixel(aX,y),new Pixel(aX,y+1))) {
+                Log.e(LOG,"Top Edge found X["+ Integer.toString(aX) + "] Y["+ Integer.toString(y) +"]");
+                float[] eventXY = new float[] {aX, y};
+                //aInvertMatrix.mapPoints(eventXY);
+                Log.e(LOG,"Left Edge found X["+ Float.toString(eventXY[0]) + "] Y["+ Float.toString(eventXY[1]) +"]");
+
+                referenceObjectDimensions.setTopEdge(eventXY);
+                break;
+            }
+        }
+        Log.e(LOG, "Leaving: FindObjectDimensions");
+        return referenceObjectDimensions;
+    }
 }

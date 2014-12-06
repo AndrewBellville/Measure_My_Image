@@ -176,7 +176,7 @@ public class DataBaseManager extends SQLiteOpenHelper {
     //************************Image Table Functions*************************
 
     /*
-    * Creating a Image
+    * Creating an Image
     */
     public boolean CreateAnImage(ImageSchema aImage) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -224,6 +224,15 @@ public class DataBaseManager extends SQLiteOpenHelper {
 
         c.close();
         return imageList;
+    }
+
+    /*
+* Delete an Image
+*/
+    public void DeleteAnImage(int Id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_IMAGE, ROW_ID + " = ?",
+                new String[] { String.valueOf(Id) });
     }
 
     /*
@@ -313,7 +322,14 @@ public class DataBaseManager extends SQLiteOpenHelper {
         return objectList;
     }
 
-
+    /*
+* Delete an reference object
+*/
+    public void DeleteReferenceObject(String aName, String aUserName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_REFERENCE_OBJECT, OBJECT_NAME + " = ? and " + USER_NAME + " = ? ",
+                new String[] { aName, aUserName});
+    }
 
 
     //************************************Helper functions***************

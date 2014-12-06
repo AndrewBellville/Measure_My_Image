@@ -9,10 +9,10 @@
         android:id="@+id/ReferenceObjectList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_above="@+id/AddObjectButton">
+        android:layout_above="@+id/AddObjectButton"
+        android:layout_below="@+id/DeleteObjRadioButton">
     </ListView>
 
     <Button
@@ -23,5 +23,15 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:onClick="onCreateClick"/>
+
+    <RadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/DeleteObject"
+        android:id="@+id/DeleteObjRadioButton"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="onRadioButtonClicked"/>
 
 </RelativeLayout>

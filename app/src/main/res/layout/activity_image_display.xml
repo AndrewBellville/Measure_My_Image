@@ -11,6 +11,48 @@
         android:id="@+id/imageView"
         android:layout_gravity="center_horizontal"
         android:layout_marginLeft="0dp"
-        android:layout_marginTop="0dp"
-        android:scaleType="centerInside" />
+        android:layout_above="@+id/DistanceLabel"
+        android:layout_below="@+id/ReferenceObjectSpinner" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/Distance"
+        android:id="@+id/DistanceLabel"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginRight="5dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text=""
+        android:id="@+id/Distance"
+        android:layout_toEndOf="@+id/DistanceLabel"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/DistanceLabel" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/ReferenceObject"
+        android:id="@+id/ReferenceObjectLabel"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginRight="5dp"/>
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ReferenceObjectSpinner"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/ReferenceObjectLabel"
+        android:layout_toEndOf="@+id/ReferenceObjectLabel" />
+
+
 </RelativeLayout>
