@@ -14,7 +14,7 @@
     <Button
         android:id="@+id/button_start_distance_camera"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="44dp"
         android:text="@string/button_distance"
         android:clickable = "true"
         android:layout_alignParentBottom="true"
@@ -25,9 +25,88 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/list_sensors"
-        android:layout_above="@+id/button_start_distance_camera"
         android:layout_alignRight="@+id/button_start_distance_camera"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/text_Label_Height"
+        android:paddingTop="10dp"
+        android:textSize="20dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:text="Change Height and Unit of Measure"
+        android:id="@+id/button_ChangeHeight"
+        android:layout_alignRight="@+id/button_start_distance_camera"
+        android:layout_alignEnd="@+id/button_start_distance_camera"
+        android:layout_above="@+id/button_start_distance_camera"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:text="Height"
+        android:clickable="false"
+        android:id="@+id/text_Label_Height"
+        android:layout_above="@+id/text_Height"
+        android:layout_alignRight="@+id/text_Height"
+        android:layout_alignEnd="@+id/text_Height"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="25dp"
+        android:textIsSelectable="false"
+        android:paddingTop="5dp"
+        android:textStyle="bold"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:id="@+id/text_Height"
+        android:layout_above="@+id/text_Label_UOM"
+        android:layout_alignRight="@+id/text_Label_UOM"
+        android:layout_alignEnd="@+id/text_Label_UOM"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:paddingTop="5dp"
+        android:textSize="25dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:singleLine="true"
+        android:inputType="numberDecimal" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:text="Unit Of Measure"
+        android:id="@+id/text_Label_UOM"
+        android:clickable="false"
+        android:layout_alignRight="@+id/spinner_UOM"
+        android:layout_alignEnd="@+id/spinner_UOM"
+        android:layout_above="@+id/spinner_UOM"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="25dp"
+        android:paddingTop="5dp"
+        android:textStyle="bold"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp" />
+    <Spinner
+        android:layout_width="194dp"
+        android:layout_height="50dp"
+        android:id="@+id/spinner_UOM"
+        android:layout_alignRight="@+id/button_ChangeHeight"
+        android:layout_alignEnd="@+id/button_ChangeHeight"
+        android:layout_above="@+id/button_ChangeHeight"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp" />
 
 </RelativeLayout>

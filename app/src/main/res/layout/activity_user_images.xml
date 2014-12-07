@@ -10,7 +10,7 @@
         android:id="@+id/scrollView"
         android:layout_alignParentLeft="false"
         android:layout_alignParentStart="true"
-        android:layout_above="@+id/button"
+        android:layout_above="@+id/button_ChangeHeight"
         android:background="#ffd2faff"
         android:layout_alignParentRight="false"
         android:layout_below="@+id/DeleteRadioButton">
@@ -27,7 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/ImportImage"
-        android:id="@+id/button"
+        android:id="@+id/button_ChangeHeight"
         android:onClick="ImportImageClick"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
@@ -41,8 +41,8 @@
         android:id="@+id/button2"
         android:onClick="TakePictureClick"
         android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/button"
-        android:layout_toEndOf="@+id/button"
+        android:layout_toRightOf="@+id/button_ChangeHeight"
+        android:layout_toEndOf="@+id/button_ChangeHeight"
         android:layout_marginLeft="40dp" />
 
     <RadioButton

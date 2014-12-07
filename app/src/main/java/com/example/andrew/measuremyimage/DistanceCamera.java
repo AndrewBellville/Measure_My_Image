@@ -24,11 +24,8 @@ package com.example.andrew.measuremyimage;
         import android.view.SurfaceHolder;
         import android.view.View;
         import android.view.ViewGroup.LayoutParams;
-        import android.widget.AdapterView;
-        import android.widget.ArrayAdapter;
         import android.widget.Button;
         import android.widget.LinearLayout;
-        import android.widget.Spinner;
         import android.widget.Toast;
         import android.widget.TextView;
         import android.content.Context;
@@ -37,7 +34,6 @@ package com.example.andrew.measuremyimage;
 
 public class DistanceCamera extends Activity implements SensorEventListener, SurfaceHolder.Callback
 {
-    TextView textOrientation;
     SensorManager orientationManager;
     Sensor orientation;
     float[] lastVectorOrientation = new float[3];
@@ -64,19 +60,22 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
     LayoutInflater distanceCameraLayoutInflater = null;
     Button buttonGetPoint;
     Button buttonChangeHeight;
+    TextView textOrientation;
     TextView textHeight;
     private DataBaseManager dbManager;
     private UserLoggedIn userLoggedIn;
     private String userName;
-    private Spinner spinner;
-    private int spinnerPos = 0;
     private PreferenceSchema userPreference;
+    View myLinearLayout;
+
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_distance_camera);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        myLinearLayout = findViewById(R.id.layout_linear_distance_camera_id);
         userLoggedIn = UserLoggedIn.getInstance();
         userName = userLoggedIn.getUser().getUserName();
         dbManager = DataBaseManager.getInstance(getApplicationContext());
@@ -87,7 +86,6 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
         else
         {
              userPreference = new PreferenceSchema(userName, 64, "in.");
-             spinnerPos=1;
              if (! dbManager.CreateAPreference(userPreference))
              {
                  Toast toast = Toast.makeText(
@@ -131,7 +129,6 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
         this.addContentView(viewDistanceCameraControl, layoutParamsControl);
         textHeight = (TextView)findViewById(R.id.editHeight);
         textHeight.setTextColor(Color.GREEN);
-        spinner = (Spinner)findViewById(R.id.UnitOfMeasureSpinner);
         buttonChangeHeight = (Button)findViewById(R.id.changeheight);
         buttonChangeHeight.setText("View Height");
         buttonChangeHeight.setTextColor(Color.GREEN);
@@ -153,9 +150,6 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
                 {
                     if ( Double.parseDouble(textHeight.getText().toString())> 0)
                         userPreference.setCameraHeight(Double.parseDouble(textHeight.getText().toString()));
-
-                    if ( spinnerPos > 0)
-                        userPreference.setUnitOfMeasure(spinner.getItemAtPosition(spinnerPos).toString());
 
                     if ( dbManager.DoesPreferenceExist(userName) )
                     {
@@ -185,18 +179,14 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
                     buttonChangeHeight.setText("View Height");
                     textHeight.setEnabled(false);
                     textHeight.setVisibility(View.INVISIBLE );
-                    spinner.setEnabled(false);
-                    spinner.setVisibility(View.INVISIBLE );
                 }
                 else
                 {
                     buttonChangeHeight.setText("Change Height");
                     textHeight.setEnabled(true);
+                    textHeight.setClickable(true);
                     textHeight.setText(String.valueOf(Double.toString(userPreference.getCameraHeight())));
                     textHeight.setVisibility(View.VISIBLE );
-                    spinner.setEnabled(true);
-                    spinner.setSelection(spinnerPos);
-                    spinner.setVisibility(View.VISIBLE );
                 }
             }
         });
@@ -214,27 +204,8 @@ public class DistanceCamera extends Activity implements SensorEventListener, Sur
                 camera.autoFocus(myAutoFocusCallback);
             }
         });
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
-                spinnerPos = pos;
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.Units_of_Measure, android.R.layout.simple_spinner_item);
-        // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        spinner.setAdapter(adapter);
-
+        myLinearLayout.invalidate();
     }
 
     /** Called when the user clicks the Send button */

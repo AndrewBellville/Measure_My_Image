@@ -5,6 +5,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:weightSum="1"
+    android:id="@+id/layout_linear_distance_camera_id"
     tools:context="com.example.andrew.measuremyimage.DistanceCamera">
 <com.example.andrew.measuremyimage.CameraPreviewView
     android:id="@+id/camerapreview"

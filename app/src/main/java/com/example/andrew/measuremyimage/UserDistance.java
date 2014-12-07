@@ -8,24 +8,39 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.view.View;
 import android.content.Intent;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.widget.Toast;
+
 import com.example.andrew.measuremyimage.DataBase.DataBaseManager;
+import com.example.andrew.measuremyimage.DataBase.PreferenceSchema;
 
 public class UserDistance extends Activity implements SensorEventListener
 {
-    TextView textListSensors;
-    SensorManager sensorManager;
-    Sensor mOrientation;
-    Sensor mAccelerometer;
-    Button buttonStartDistanceCamera;
+    private SensorManager sensorManager;
+    private Sensor mOrientation;
+    private Sensor mAccelerometer;
     private DataBaseManager dbManager;
     private UserLoggedIn userLoggedIn;
     private String userName;
+    private PreferenceSchema userPreference;
+
+    private View myRelativeLayout;
+    private TextView textMessage;
+    private TextView textCameraHeightPreference;
+    private Spinner spinnerCameraHeightUOM;
+    private int spinnerPos = 0;
+    private Button buttonStartDistanceCamera;
+    private Button buttonChangeUserPreference;
 
     // Log cat tag
     private static final String LOG = "UserDistance";
@@ -35,70 +50,160 @@ public class UserDistance extends Activity implements SensorEventListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_distance);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        Intent intent = getIntent();
         userLoggedIn = UserLoggedIn.getInstance();
         userName = userLoggedIn.getUser().getUserName();
-        dbManager = DataBaseManager.getInstance(getApplicationContext());
+        if (dbManager==null)
+            dbManager = DataBaseManager.getInstance(getApplicationContext());
+
+        if ( dbManager.DoesPreferenceExist(userName) )
+        {
+            userPreference = dbManager.getPreference(userName);
+        }
+        else
+        {
+            userPreference = new PreferenceSchema(userName, 64, "in.");
+            spinnerPos=1;
+            if (! dbManager.CreateAPreference(userPreference))
+            {
+                Toast toast = Toast.makeText(
+                        getApplicationContext(),
+                        "Error: Insert of default Camera Height Preference did not save to Database!",
+                        Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.LEFT,0,0);
+                toast.show();
+            }
+        }
 
 // Find views
-        View myrelativeLayout = findViewById(R.id.my_id);
-        textListSensors = (TextView) findViewById(R.id.list_sensors);
-        textListSensors.setText("");
+        myRelativeLayout = findViewById(R.id.my_id);
+        textMessage = (TextView) findViewById(R.id.list_sensors);
+        textCameraHeightPreference = (TextView) findViewById(R.id.text_Height);
+        spinnerCameraHeightUOM = (Spinner)findViewById(R.id.spinner_UOM);
+        buttonStartDistanceCamera = (Button) findViewById(R.id.button_start_distance_camera );
+        buttonChangeUserPreference = (Button) findViewById(R.id.button_ChangeHeight );
+
 // Get sensor manager
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mOrientation = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
         mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        buttonStartDistanceCamera = (Button) findViewById(R.id.button_start_distance_camera );
 
 // Test if orientation sensor exist on the device
         boolean orientok = sensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_UI);
         if (!orientok){
-            sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION));
-            textListSensors.setText("No orientation sensor\n");
+            textMessage.setText("No orientation sensor\n");
             buttonStartDistanceCamera.setEnabled(false);
         }
+        sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION));
 
 // Test if accelerometer sensor exist on the device
         boolean accelerometerok = sensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         if (!accelerometerok){
-            sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
-            textListSensors.append("No accelerometer sensor\n");
+            textMessage.append("No accelerometer sensor\n");
             buttonStartDistanceCamera.setEnabled(false);
         }
+        sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
 
-        buttonStartDistanceCamera.setOnClickListener(new Button.OnClickListener(){
-
-            @Override
-            public void onClick(View arg0) {
-                startDistanceCamera(arg0);
-            }});
-
-// List sensors
-        List<Sensor> list = sensorManager.getSensorList(Sensor.TYPE_ALL);
-        Log.d("SensorActivity", "Found sensors: " + list.size());
-        if ( list.size() > 0)
+        if (orientok && accelerometerok)
         {
-            textListSensors.append("\n" + "Sensor List" );
-            textListSensors.append("\n" + "-----------" );
-            for (Sensor currentSensor : list) {
-                textListSensors.append("\n" + currentSensor.getName());
+            buttonStartDistanceCamera.setOnClickListener(new Button.OnClickListener(){
+
+                @Override
+                public void onClick(View arg0) {
+                    startDistanceCamera(arg0);
+                }});
+
+            buttonChangeUserPreference.setOnClickListener(new Button.OnClickListener(){
+
+                @Override
+                public void onClick(View arg0) {
+                    modifyUserPreference(arg0);
+                }
+            });
+
+            spinnerCameraHeightUOM.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
+                    spinnerPos = pos;
+                    ((TextView) adapterView.getChildAt(0)).setTextSize(TypedValue.COMPLEX_UNIT_DIP, 25);
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+            // Create an ArrayAdapter using the string array and a default spinner layout
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                    R.array.Units_of_Measure, android.R.layout.simple_spinner_item);
+            // Specify the layout to use when the list of choices appears
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            // Apply the adapter to the spinner
+            spinnerCameraHeightUOM.setAdapter(adapter);
+
+            textCameraHeightPreference.setText(Double.toString(userPreference.getCameraHeight()));
+            if (!userPreference.getUnitOfMeasure().equals(null)) {
+                spinnerPos = adapter.getPosition(userPreference.getUnitOfMeasure());
+                spinnerCameraHeightUOM.setSelection(spinnerPos);
+                spinnerPos = 0;
             }
+            String messagePreferenceInfo = String.format("CURRENT USER PREFERENCE :\n\tHeight[%.1f] \n\tUnit of Measure[%s]"
+                    ,userPreference.getCameraHeight(), userPreference.getUnitOfMeasure());
+            textMessage.setText(messagePreferenceInfo);
+
         }
-        myrelativeLayout.invalidate();
+        else
+        {
+            textCameraHeightPreference.setEnabled(false);
+            spinnerCameraHeightUOM.setEnabled(false);
+            buttonStartDistanceCamera.setEnabled(false);
+            buttonChangeUserPreference.setEnabled(false);
+        }
+
+        myRelativeLayout.invalidate();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        sensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        if (dbManager == null)
+            dbManager = DataBaseManager.getInstance(getApplicationContext());
+
+        if ( dbManager.DoesPreferenceExist(userName) )
+        {
+            userPreference = dbManager.getPreference(userName);
+        }
+        else
+        {
+            if (userPreference == null)
+                userPreference = new PreferenceSchema(userName, 64, "in.");
+
+            if (! dbManager.CreateAPreference(userPreference))
+            {
+                Toast toast = Toast.makeText(
+                        getApplicationContext(),
+                        "Error: Insert of default Camera Height Preference did not save to Database!",
+                        Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.LEFT,0,0);
+                toast.show();
+            }
+        }
+        textCameraHeightPreference.setText(Double.toString(userPreference.getCameraHeight()));
+        if (!userPreference.getUnitOfMeasure().equals(null)) {
+            ArrayAdapter<CharSequence> myAdapter = (ArrayAdapter<CharSequence>)spinnerCameraHeightUOM.getAdapter();
+            spinnerPos = myAdapter.getPosition(userPreference.getUnitOfMeasure());
+            spinnerCameraHeightUOM.setSelection(spinnerPos);
+            spinnerPos = 0;
+        }
+        String messagePreferenceInfo = String.format("CURRENT USER PREFERENCE :\n\tHeight[%.1f] \n\tUnit of Measure[%s]"
+                ,userPreference.getCameraHeight(), userPreference.getUnitOfMeasure());
+        textMessage.setText(messagePreferenceInfo);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION));
-        sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
     }
 
     @Override
@@ -122,24 +227,49 @@ public class UserDistance extends Activity implements SensorEventListener
 
     // Called when sensor changes
     public void onSensorChanged(SensorEvent event) {
-        if ( event.sensor.getType() == Sensor.TYPE_ACCELEROMETER )
-        {
-            int i = 0;
-            for( float value_fl : event.values ) {
-                String outfloat;
-                outfloat = String.format("Acceleromter[%d]: %.2f", i, value_fl);
-           //     outfloat = outfloat + "\n";
-            //    textListSensors.append(outfloat);
-                i = i + 1;
-            }
-        }
     }
 
-    /** Called when the user clicks the Send button */
+    /** Called when the user clicks the Start button */
     public void startDistanceCamera(View view) {
         // Do something in response to button
         Intent intent = new Intent(this, DistanceCamera.class);
         startActivity(intent);
     }
+    /** Called when the user clicks the Change Height and Unit of Measure button */
+    public void modifyUserPreference(View view) {
+        if ( Double.parseDouble(textCameraHeightPreference.getText().toString())> 0)
+            userPreference.setCameraHeight(Double.parseDouble(textCameraHeightPreference.getText().toString()));
 
+        if ( spinnerPos > 0)
+            userPreference.setUnitOfMeasure(spinnerCameraHeightUOM.getItemAtPosition(spinnerPos).toString());
+
+        if ( dbManager.DoesPreferenceExist(userName) )
+        {
+            if (! dbManager.modifyPreference(userPreference))
+            {
+                Toast toast = Toast.makeText(
+                        getApplicationContext(),
+                        "Error: Update to Camera Height Preference did not save to Database!",
+                        Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.LEFT,0,0);
+                toast.show();
+            }
+        }
+        else
+        {
+            if (! dbManager.CreateAPreference(userPreference))
+            {
+                Toast toast = Toast.makeText(
+                        getApplicationContext(),
+                        "Error: Insert of Camera Height Preference did not save to Database!",
+                        Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.LEFT,0,0);
+                toast.show();
+            }
+        }
+
+        String messagePreferenceInfo = String.format("CURRENT USER PREFERENCE :\n\tHeight[%.1f] \n\tUnit of Measure[%s]"
+                ,userPreference.getCameraHeight(), userPreference.getUnitOfMeasure());
+        textMessage.setText(messagePreferenceInfo);
+    }
 }

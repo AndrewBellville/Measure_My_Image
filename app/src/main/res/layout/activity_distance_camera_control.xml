@@ -18,24 +18,16 @@ android:weightSum="1">
         android:layout_weight="0.95" />
 
     <EditText
-        android:layout_width="193dp"
+        android:layout_width="182dp"
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
         android:ems="10"
         android:id="@+id/editHeight"
         android:layout_gravity="right"
-        android:visibility="visible"
+        android:visibility="invisible"
         android:enabled="false"
-        android:editable="true" />
-
-    <Spinner
-        android:layout_width="194dp"
-        android:layout_height="44dp"
-        android:id="@+id/UnitOfMeasureSpinner"
-        android:layout_alignParentRight="true"
-        android:layout_gravity="right"
-        android:visibility="visible"
-        android:enabled="false" />
+        android:editable="true"
+        android:singleLine="true"/>
 
     <Button
         android:id="@+id/changeheight"
