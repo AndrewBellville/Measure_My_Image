@@ -21,9 +21,6 @@ public class ReferenceObject extends ActionBarActivity {
     // Log cat tag
     private static final String LOG = "ReferenceObject";
 
-    //intent message
-    public final static String EXTRA_MESSAGE = "com.example.measuremyimage.MESSAGE";
-
     private TextView objectName;
     private TextView height;
     private TextView width;

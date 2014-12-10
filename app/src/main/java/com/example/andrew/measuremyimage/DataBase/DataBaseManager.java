@@ -21,7 +21,7 @@ import java.util.Locale;
  */
 public class DataBaseManager extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 5;//increment to have DB changes take effect
+    private static final int DATABASE_VERSION = 6;//increment to have DB changes take effect
     private static final String DATABASE_NAME = "MeasureMyImage";
 
     // Log cat tag

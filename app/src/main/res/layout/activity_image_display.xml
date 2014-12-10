@@ -11,8 +11,8 @@
         android:id="@+id/imageView"
         android:layout_gravity="center_horizontal"
         android:layout_marginLeft="0dp"
-        android:layout_above="@+id/DistanceLabel"
-        android:layout_below="@+id/ReferenceObjectSpinner" />
+        android:layout_below="@+id/ReferenceObjectSpinner"
+        android:layout_above="@+id/textView" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -53,6 +53,65 @@
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/ReferenceObjectLabel"
         android:layout_toEndOf="@+id/ReferenceObjectLabel" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Object"
+        android:id="@+id/ObjectTextView"
+        android:layout_above="@+id/DistanceLabel"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:padding="5px"
+        android:textColor="#ffff1800"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="First Point"
+        android:id="@+id/FPointTextView"
+        android:layout_alignBottom="@+id/ObjectTextView"
+        android:layout_toRightOf="@+id/ObjectTextView"
+        android:layout_toEndOf="@+id/ObjectTextView"
+        android:padding="5px"
+        android:textColor="#ffff1800"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Second Point"
+        android:id="@+id/SPointTextView"
+        android:layout_toEndOf="@+id/FPointTextView"
+        android:layout_above="@+id/Distance"
+        android:layout_toRightOf="@+id/FPointTextView"
+        android:padding="5px"
+        android:textColor="#ffff1800"/>
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Find"
+        android:id="@+id/FindButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignLeft="@+id/ResetButton"
+        android:layout_alignStart="@+id/ResetButton"
+        android:onClick="onFindClick"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reset"
+        android:id="@+id/ResetButton"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="onResetClick"/>
 
 
 </RelativeLayout>

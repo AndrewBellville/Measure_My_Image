@@ -10,6 +10,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,6 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.andrew.measuremyimage.DataBase.DataBaseManager;
 import com.example.andrew.measuremyimage.DataBase.ImageSchema;
@@ -41,11 +43,14 @@ public class ImageDisplay extends ActionBarActivity {
     private String userName;
     private UserLoggedIn userLoggedIn;
     TextView distance;
+    TextView objectFound;
+    TextView firstPoint;
+    TextView secondPoint;
     boolean isRefOb = false;
     ReferenceObjectDimensions objectDimensions;
 
+    float[] tp1;
     float[] tp2;
-    float[] tp3;
 
     float lastEventX = 0;
     float lastEventY = 0;
@@ -64,6 +69,9 @@ public class ImageDisplay extends ActionBarActivity {
         userLoggedIn = UserLoggedIn.getInstance();
         userName = userLoggedIn.getUser().getUserName();
         distance = (TextView)findViewById(R.id.Distance);
+        objectFound = (TextView)findViewById(R.id.ObjectTextView);
+        firstPoint = (TextView)findViewById(R.id.FPointTextView);
+        secondPoint = (TextView)findViewById(R.id.SPointTextView);
         spinner = (Spinner)findViewById(R.id.ReferenceObjectSpinner);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
@@ -158,7 +166,7 @@ public class ImageDisplay extends ActionBarActivity {
             y = bitmap.getHeight()-1;
         }
         imageProcessor = new ImageProcessing(bitmap);
-        SaveTouchPoints(x,y,invertMatrix);
+        SaveTouchPoints(x,y);
 
         return true;
     }};
@@ -174,25 +182,49 @@ public class ImageDisplay extends ActionBarActivity {
         //Log.e(LOG,"touched color: " + "#" + Integer.toHexString(touchedRGB));
     }
 
-    private void SaveTouchPoints(int aX,int aY, Matrix aInvertMatrix )
+    private void SaveTouchPoints(int aX,int aY)
     {
         Log.e(LOG, "Entering: SaveTouchPoints");
         if(!isRefOb) {
-            objectDimensions = imageProcessor.FindObjectDimensions(aX,aY, aInvertMatrix);
+            objectDimensions = imageProcessor.FindObjectDimensions(aX,aY);
             isRefOb = true;
+        }
+        else if(tp1 == null){
+            tp1 = new float[]{aX,aY};
+            Toast toast = Toast.makeText(
+                    getApplicationContext(),
+                    "X: "+tp1[0]+" Y: "+tp1[1],
+                    Toast.LENGTH_SHORT);
+            toast.show();
+
         }
         else if(tp2 == null){
             tp2 = new float[]{aX,aY};
+            Toast toast = Toast.makeText(
+                    getApplicationContext(),
+                    "X: "+tp2[0]+" Y: "+tp2[1],
+                    Toast.LENGTH_SHORT);
+            toast.show();
         }
-        else if(tp3 == null){
-            tp3 = new float[]{aX,aY};
-        }
-        else
-        {
-            if(spinnerPos ==  -1) return;
-            float diff2  = objectDimensions.FindDistance(tp2, tp3, ReferenceObjectArray.get(spinnerPos));
-            distance.setText(Float.toString(diff2) + " " + ReferenceObjectArray.get(spinnerPos).getUnitOfMeasure());
-        }
+
+        UpdateLabels();
+    }
+
+    private void UpdateLabels()
+    {
+        Log.e(LOG, "Entering: UpdateLabels");
+
+        String red = "#ffff1800";
+        String green = "#00ff00";
+
+        if(isRefOb) objectFound.setTextColor(Color.parseColor(green));
+        else objectFound.setTextColor(Color.parseColor(red));
+
+        if(!(tp1 == null)) firstPoint.setTextColor(Color.parseColor(green));
+        else firstPoint.setTextColor(Color.parseColor(red));
+
+        if(!(tp2 == null)) secondPoint.setTextColor(Color.parseColor(green));
+        else secondPoint.setTextColor(Color.parseColor(red));
     }
 
     private ArrayList<String> SetReferenceObjectArray()
@@ -210,6 +242,56 @@ public class ImageDisplay extends ActionBarActivity {
         }
 
         return ObjectNameArray;
+    }
 
+    public void onFindClick(View aView)
+    {
+        Log.e(LOG, "Entering: onFindClick");
+
+        if(spinnerPos ==  -1){
+            Toast toast = Toast.makeText(
+                    getApplicationContext(),
+                    "No Object Attached",
+                    Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+        else if(!isRefOb){
+            Toast toast = Toast.makeText(
+                    getApplicationContext(),
+                    "Object Attached Not found",
+                    Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+        else if(tp1 == null){
+            Toast toast = Toast.makeText(
+                    getApplicationContext(),
+                    "First Touch Point Not Found",
+                    Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+        else if (tp2 == null){
+            Toast toast = Toast.makeText(
+                    getApplicationContext(),
+                    "Second Touch Point Not Found",
+                    Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
+        float diff2  = objectDimensions.FindDistance(tp1, tp2, ReferenceObjectArray.get(spinnerPos));
+        distance.setText(Float.toString(diff2) + " " + ReferenceObjectArray.get(spinnerPos).getUnitOfMeasure());
+    }
+
+    public void onResetClick(View aView)
+    {
+        Log.e(LOG, "Entering: onResetClick");
+        isRefOb = false;
+        tp1 = null;
+        tp2 = null;
+
+        UpdateLabels();
     }
 }

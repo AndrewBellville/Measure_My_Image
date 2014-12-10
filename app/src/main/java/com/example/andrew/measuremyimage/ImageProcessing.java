@@ -273,7 +273,7 @@ public class ImageProcessing {
         return pixels;
     }
 
-    public ReferenceObjectDimensions FindObjectDimensions(int aX, int aY, Matrix aInvertMatrix)
+    public ReferenceObjectDimensions FindObjectDimensions(int aX, int aY)
     {
         Log.e(LOG, "Entering: FindObjectDimensions");
 
@@ -283,9 +283,7 @@ public class ImageProcessing {
         // look to the right from point touched until first edge is found
         for (int x=aX++;x < imageWidth - 1; x++) {
             if(PixelComparison(new Pixel(x,aY),new Pixel(x-1,aY))) {
-                Log.e(LOG,"Right Edge found X["+ Integer.toString(x) + "] Y["+ Integer.toString(aY) +"]");
                 float[] eventXY = new float[] {x, aY};
-               // aInvertMatrix.mapPoints(eventXY);
                 Log.e(LOG,"Right Edge found X["+ Float.toString(eventXY[0]) + "] Y["+ Float.toString(eventXY[1]) +"]");
 
                 referenceObjectDimensions.setRightEdge(eventXY);
@@ -296,9 +294,7 @@ public class ImageProcessing {
         // look to the left from point touched until first edge is found
         for (int x=aX--;x > 0; x--) {
             if(PixelComparison(new Pixel(x,aY),new Pixel(x+1,aY))) {
-                Log.e(LOG,"Left Edge found X["+ Integer.toString(x) + "] Y["+ Integer.toString(aY) +"]");
                 float[] eventXY = new float[] {x, aY};
-               // aInvertMatrix.mapPoints(eventXY);
                 Log.e(LOG,"Left Edge found X["+ Float.toString(eventXY[0]) + "] Y["+ Float.toString(eventXY[1]) +"]");
 
                 referenceObjectDimensions.setLeftEdge(eventXY);
@@ -309,9 +305,7 @@ public class ImageProcessing {
         // look to the down from point touched until first edge is found
         for (int y=aY++;y < imageHeight - 1; y++) {
             if(PixelComparison(new Pixel(aX,y),new Pixel(aX,y-1))) {
-                Log.e(LOG,"Bottom Edge found X["+ Integer.toString(aX) + "] Y["+ Integer.toString(y) +"]");
                 float[] eventXY = new float[] {aX, y};
-                //aInvertMatrix.mapPoints(eventXY);
                 Log.e(LOG,"Left Edge found X["+ Float.toString(eventXY[0]) + "] Y["+ Float.toString(eventXY[1]) +"]");
 
                 referenceObjectDimensions.setBottomEdge(eventXY);
@@ -322,9 +316,7 @@ public class ImageProcessing {
         // look to the up from point touched until first edge is found
         for (int y =aY--;y > 0; y--) {
             if(PixelComparison(new Pixel(aX,y),new Pixel(aX,y+1))) {
-                Log.e(LOG,"Top Edge found X["+ Integer.toString(aX) + "] Y["+ Integer.toString(y) +"]");
                 float[] eventXY = new float[] {aX, y};
-                //aInvertMatrix.mapPoints(eventXY);
                 Log.e(LOG,"Left Edge found X["+ Float.toString(eventXY[0]) + "] Y["+ Float.toString(eventXY[1]) +"]");
 
                 referenceObjectDimensions.setTopEdge(eventXY);
